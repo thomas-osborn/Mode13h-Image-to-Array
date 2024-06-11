@@ -1,13 +1,21 @@
 #Place your image in the folder with the image-hodler folder, then run the script.
 
-from PIL import Image
+from PIL import Image, ImageColor
 import os
+import numpy as np
+
+def closest(colors,color):
+    colors = np.array(colors)
+    color = np.array(color)
+    distances = np.sqrt(np.sum((colors-color)**2,axis=1))
+    return np.where(distances == np.amin(distances))[0][0]
 
 img_folder = 'image-holder'
 img_file = os.listdir(img_folder)[0]
 img_path = os.path.join(os.path.basename(img_folder), os.path.basename(img_file))
 
 img = Image.open(img_path, 'r')
+img.putalpha(255)
 img_val = list(img.getdata())
 
 ref = Image.open('ref.png', 'r')
@@ -15,9 +23,20 @@ ref_val = list(ref.getdata())
 
 final_val = []
 
-for i in img_val:
-    for j in ref_val:
-        if i == j:
-            final_val.append(ref_val.index(j))
+w, h = img.size
+img_out = Image.new(mode='RGB', size=(w, h))
 
-print(final_val)
+inc = 0
+for i in img_val:
+    ndx = closest(ref_val, i)
+    final_val.append(ndx)
+    xpos = inc % w
+    ypos = inc // w
+    img_out.putpixel((xpos, ypos), ref_val[ndx])
+    inc += 1
+
+final = ', '.join(str(x) for x in final_val)
+print(final)
+with open("outfile.txt", "w") as outfile:
+    outfile.write(final)
+img_out.save('output-' + os.path.basename(img_file))
