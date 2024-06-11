@@ -1,11 +1,11 @@
 #Place your image in the folder with the image-hodler folder, then run the script.
 
-from PIL import Image, ImageColor
+from PIL import Image
 import os
 import numpy as np
 
-def closest(colors,color):
-    colors = np.array(colors)
+
+def closest(color):
     color = np.array(color)
     distances = np.sqrt(np.sum((colors-color)**2,axis=1))
     return np.where(distances == np.amin(distances))[0][0]
@@ -20,6 +20,7 @@ img_val = list(img.getdata())
 
 ref = Image.open('ref.png', 'r')
 ref_val = list(ref.getdata())
+colors = np.array(ref_val)
 
 final_val = []
 
@@ -28,7 +29,7 @@ img_out = Image.new(mode='RGB', size=(w, h))
 
 inc = 0
 for i in img_val:
-    ndx = closest(ref_val, i)
+    ndx = closest(i)
     final_val.append(ndx)
     xpos = inc % w
     ypos = inc // w
@@ -36,7 +37,6 @@ for i in img_val:
     inc += 1
 
 final = ', '.join(str(x) for x in final_val)
-print(final)
 with open("outfile.txt", "w") as outfile:
     outfile.write(final)
 img_out.save('output-' + os.path.basename(img_file))
