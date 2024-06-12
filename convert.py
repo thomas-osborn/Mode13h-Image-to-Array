@@ -1,9 +1,9 @@
 #Place your image in the folder with the image-hodler folder, then run the script.
 
+from progress.spinner import MoonSpinner
 from PIL import Image
-import os
 import numpy as np
-
+import os
 
 def closest(color):
     color = np.array(color)
@@ -27,6 +27,9 @@ final_val = []
 w, h = img.size
 img_out = Image.new(mode='RGB', size=(w, h))
 
+done = False
+spinner = MoonSpinner('Processing… ')
+
 inc = 0
 for i in img_val:
     ndx = closest(i)
@@ -36,7 +39,13 @@ for i in img_val:
     img_out.putpixel((xpos, ypos), ref_val[ndx])
     inc += 1
 
+    if inc % 5000 == 0:
+        spinner.next()
+    
+done = True
 final = ', '.join(str(x) for x in final_val)
 with open("outfile.txt", "w") as outfile:
     outfile.write(final)
 img_out.save('output-' + os.path.basename(img_file))
+print("\rProcess Completed!")
+
